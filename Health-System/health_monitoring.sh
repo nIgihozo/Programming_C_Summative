@@ -28,10 +28,15 @@ cpu_mon() {
   need_cmd top || return
   local thresh; thresh=$(read_num "CPU warning threshold (1-100): " 1 100) || return
   local idle used
-  idle=$(LC_ALL=C top -bn1 | awk -F'[, ]+' '/Cpu\(s\)|%Cpu/{for(i=1;i<=NF;i++) if($i~/id\./||$(i+1)=="id") print $(i-1)}' | head -n1)
-  used=$(awk -v i="${idle:-0}" 'BEGIN{printf "%.1f", 100-i}')
+  read -r _ u1 n1 s1 i1 w1 _ < /proc/stat
+  sleep 0.2
+  read -r _ u2 n2 s2 i2 w2 _ < /proc/stat
+  local idle_d=$(( (i2 + w2) - (i1 + w1) ))
+  local total_d=$(( (u2+n2+s2+i2+w2) - (u1+n1+s1+i1+w1) ))
+  local used
+  used=$(awk -v t="$total_d" -v id="$idle_d" 'BEGIN{printf "%.1f", (t>0)?((t-id)*100)/t:0}')
   echo "CPU Usage: ${used}%"
-  ps -eo pid,comm,%cpu,%memory --sort=-%cpu | head -n 6
+  ps -eo pid,pcpu,pmem,comm | sort -k2 -nr | head -n 6
   awk -v u="$used" -v t="$thresh" 'BEGIN{exit !(u>t)}' && log_msg "WARN: CPU ${used}% > ${thresh}%" || log_msg "INFO: CPU ${used}% checked"
 }
 
@@ -39,7 +44,14 @@ cpu_mon() {
 mem_mon() {
   need_cmd free || return
   local thresh; thresh=$(read_num "Memory warning threshold (1-100): " 1 100) || return
-  read -r total used avail pct < <(free -m | awk '/^Memory:/{p=($2>0)?($3*100/$2):0; printf "%d %d %d %.1f\n",$2,$3,$7,p}')
+  local total_kb avail_kb
+  total_kb=$(awk '/^MemTotal:/ {print $2}' /proc/meminfo)
+  avail_kb=$(awk '/^MemAvailable:/ {print $2}' /proc/meminfo)
+  local total=$((total_kb / 1024))
+  local avail=$((avail_kb / 1024))
+  local used=$((total - avail))
+  local pct
+  pct=$(awk -v u="$used" -v t="$total" 'BEGIN{printf "%.1f", (t>0)?(u*100)/t:0}')
   echo "Memory: ${used}MB / ${total}MB (Avail: ${avail}MB, Used: ${pct}%)"
   awk -v u="$pct" -v t="$thresh" 'BEGIN{exit !(u>t)}' && log_msg "WARN: Memory ${pct}% > ${thresh}%" || log_msg "INFO: Memory ${pct}% checked"
 }
@@ -57,6 +69,8 @@ disk_mon() {
 
 # Searching Process
 proc_search() {
+  echo "Running processes (PID  %CPU  %MEM  CMD):"
+  ps -eo pid,pcpu,pmem,comm | sort -k2 -nr | head -n 12
   read -r -p "Process name or PID: " q
   [[ -z "$q" ]] && { echo "Empty query."; return; }
   if [[ "$q" =~ ^[0-9]+$ ]]; then ps -fp "$q" 2>/dev/null || echo "PID $q not found."
@@ -81,13 +95,13 @@ gen_report() {
   local file="${dir}/health_$(date '+%Y%m%d_%H%M%S').txt"
   {
     echo "=== System Health Report ($(date)) ==="
-    uname -a; uptime; echo "--- Memory ---"; free -h; echo "--- Disk ---"; df -hP; echo "--- Top CPU ---"; ps -eo pid,comm,%cpu,%memory --sort=-%cpu | head -n 6
+    uname -a; uptime; echo "--- Memory ---"; free -h; echo "--- Disk ---"; df -hP; echo "--- Top CPU ---"; ps -eo pid,pcpu,pmem,comm | sort -k2 -nr | head -n 6
   } > "$file" 2>/dev/null && { echo "Saved: $file"; log_msg "INFO: Report saved to $file"; } || echo "Write failed."
 }
 
 # Clearing Logs
 clear_log() {
-  read -r -p "Clear activity log? [y/N]: " ans
+  read -r -p "You want to clear activity log? [y/N]: " ans
   [[ "$ans" =~ ^[Yy]$ ]] && { : > "$LOG_FILE" && echo "Log cleared."; }
 }
 
