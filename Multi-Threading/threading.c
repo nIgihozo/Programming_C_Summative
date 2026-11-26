@@ -107,7 +107,7 @@ static int write_report(Task *t) {
     build_report_name(t->file, rpath, sizeof(rpath));
     FILE *out = fopen(rpath, "w");
     if (!out) {
-        snprintf(t->err, sizeof(t->err), "Failed to create report %s", rpath);
+        printf(t->err, sizeof(t->err), "Failed to create report %s", rpath);
         return 0;
     }
     fprintf(out, "Input File: %s\n", t->file);
@@ -163,11 +163,12 @@ static void *process_file(void *arg) {
     t->total_lines = line_no;
     fclose(fp);
 
+     t->ok = 1;
     if (!write_report(t)) {
         printf("[Thread %d] Error processing %s: %s\n", t->idx, t->file, t->err);
         return NULL;
     }
-    t->ok = 1;
+    
     printf("[Thread %d] Successfully processed %s\n", t->idx, t->file);
     return NULL;
 }
