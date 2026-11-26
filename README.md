@@ -43,7 +43,7 @@ Programming_C_Summative/
 
 - Execution: Upload the sketch and open the Serial Monitor at 9600 baud to observe real-time occupancy counts, capacity alerts, and non-blocking status updates.
 
-**Project 2:** Interactive Linux Health & Process Monitor
+### Project 2: Interactive Linux Health & Process Monitor
 - Requirements: Bash shell on Linux (or WSL/Git Bash with standard GNU utilities).
 
 Run:
@@ -108,8 +108,8 @@ gcc -Wall -Wextra -pthread threading.c -o threading
 - pthread_join() ensures all worker threads finish before printing the final processing summary.
 
 ### Error Handling & Defensive Practices
-**Input Validation:** Bounded integer/floating-point parsers flush malformed stdin buffers cleanly without infinite loops.
+- **Input Validation:** Bounded integer/floating-point parsers flush malformed stdin buffers cleanly without infinite loops.
 
-**Memory Safety**: Every malloc/calloc/realloc allocation is checked for NULL and paired with free() prior to exit.
+- **Memory Safety**: Every malloc/calloc/realloc allocation is checked for NULL and paired with free() prior to exit.
 
-**File & Thread Resilience:** Missing files, write failures, duplicate IDs, empty datasets, and thread creation errors are caught and reported without crashing.
+- **File & Thread Resilience:** Missing files, write failures, duplicate IDs, empty datasets, and thread creation errors are caught and reported without crashing.
