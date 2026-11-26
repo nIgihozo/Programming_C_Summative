@@ -351,6 +351,8 @@ int main(void) {
 
     while (1) {
         printf("\n1.Register \n2.Display All Students \n3.View \n4.Update \n5.Delete \n6.Add Course \n7.Update Marks \n8.Search \n9.Sort \n10.Report \n11.Save \n0.Exit\n");
+
+        // Switch cases for user's input
         switch (read_int("Choice: ", 0, 11)) {
             case 1: students = add_student(&students, &count); break;
             case 2: for (int i = 0; i < count; i++) print_student(&students[i]); break;
