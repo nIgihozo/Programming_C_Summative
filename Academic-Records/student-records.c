@@ -70,6 +70,7 @@ static double read_double(const char *prompt, double min, double max) {
     }
 }
 
+// Finding student by using ID from student records
 static int find_by_id(const Student *list, int n, int id) {
     for (int i = 0; i < n; i++) {
         if ((list + i)->id == id) return i;
@@ -77,6 +78,7 @@ static int find_by_id(const Student *list, int n, int id) {
     return -1;
 }
 
+// Calculating student's grades average
 static double calc_avg(const Student *s) {
     if (!s || s->courseCount <= 0 ) return 0.0;
     double earned = 0.0, possible = 0.0;
@@ -96,6 +98,7 @@ static int has_passed(const Student *s) {
     return 1;
 }
 
+// Displaying all students from current record
 static void print_student(const Student *s) {
     printf("\nID: %d | %s %s | %s (Year %d) | Courses: %d | Avg: %.2f%% | %s\n",
            s->id, s->firstName, s->lastName, s->programme, s->year,
@@ -106,6 +109,8 @@ static void print_student(const Student *s) {
         printf("  - [%s] %s: %.1f / %.1f\n", c->code, c->name, c->grades, c->maxGrades);
     }
 }
+
+// Adding student
 static Student *add_student(Student **list, int *n) {
     int id = read_int("Student ID: ", 1, 99999999);
     if (find_by_id(*list, *n, id) != -1) {
@@ -134,6 +139,7 @@ static Student *add_student(Student **list, int *n) {
     return *list;
 }
 
+// Updating student records
 static void update_student(Student *list, int n) {
     int idx = find_by_id(list, n, read_int("Student ID to update: ", 1, 99999999));
     if (idx == -1) { printf("Student not found.\n"); return; }
@@ -145,6 +151,7 @@ static void update_student(Student *list, int n) {
     printf("Record updated.\n");
 }
 
+// Deleting student from student record
 static Student *delete_student(Student **list, int *n) {
     int idx = find_by_id(*list, *n, read_int("Student ID to delete: ", 1, 99999999));
     if (idx == -1) { printf("Student not found.\n"); return *list; }
@@ -161,6 +168,7 @@ static Student *delete_student(Student **list, int *n) {
     return *list;
 }
 
+// Managing and updating the student's courses
 static void manage_course(Student *list, int n, int is_update) {
     int idx = find_by_id(list, n, read_int("Student ID: ", 1, 99999999));
     if (idx == -1) { printf("Student not found.\n"); return; }
@@ -190,6 +198,7 @@ static void manage_course(Student *list, int n, int is_update) {
     }
 }
 
+// Searching student
 static void search_students(Student *list, int n) {
     int mode = read_int("Search by: 1) ID  2) Name  3) Programme: ", 1, 3);
     int found = 0;
@@ -212,9 +221,10 @@ static void search_students(Student *list, int n) {
     if (!found) printf("No matching records.\n");
 }
 
+// Sorting student records
 static void sort_students(Student *list, int n) {
     if (n < 2) { printf("Not enough records to sort.\n"); return; }
-    int by = read_int("Sort by: 1) ID  2) Name  3) Average  4) Programme: ", 1, 4);
+    int by = read_int("Sort by: \n1) ID  \n2) Name  \n3) Average  \n4) Programme \nEnter your choice:", 1, 4);
     for (int i = 0; i < n - 1; i++) {
         for (int j = 0; j < n - i - 1; j++) {
             Student *a = list + j, *b = list + j + 1;
@@ -231,6 +241,7 @@ static void sort_students(Student *list, int n) {
     printf("Records sorted.\n");
 }
 
+// Student report analysis
 static void report_analytics(Student *list, int n) {
     if (n == 0) { printf("No students registered.\n"); return; }
     int totalCourses = 0, passCount = 0, failCount = 0;
@@ -249,6 +260,7 @@ static void report_analytics(Student *list, int n) {
         }
     }
 
+    // Printing studen academic performance report
     printf("\n=== Academic Performance Report ===\n");
     printf("Students: %d | Total Courses: %d | Overall Avg: %.2f%%\n",
            n, totalCourses, (n > 0) ? sumAvg / n : 0.0);
@@ -256,6 +268,7 @@ static void report_analytics(Student *list, int n) {
     if (best) printf("Highest Avg: %s %s (%.2f%%)\n", best->firstName, best->lastName, hi);
     if (worst) printf("Lowest Avg: %s %s (%.2f%%)\n", worst->firstName, worst->lastName, lo);
 
+    // Printing course's average
     printf("\n-- Average per Course --\n");
     for (int i = 0; i < n; i++) {
         for (int j = 0; j < list[i].courseCount; j++) {
@@ -289,6 +302,7 @@ static void report_analytics(Student *list, int n) {
     }
 }
 
+// Saving student records
 static void save_data(Student *list, int n) {
     FILE *fp = fopen(DATA_FILE, "wb");
     if (!fp) { printf("Error opening %s for writing.\n", DATA_FILE); return; }
@@ -298,6 +312,7 @@ static void save_data(Student *list, int n) {
     printf("Saved %d student(s) to %s.\n", n, DATA_FILE);
 }
 
+// Loading data from file
 static Student *load_data(Student **list, int *n) {
     FILE *fp = fopen(DATA_FILE, "rb");
     if (!fp) return *list;
