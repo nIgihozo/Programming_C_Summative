@@ -147,7 +147,7 @@ static void update_student(Student *list, int n) {
     read_line("New first name: ", s->firstName, sizeof(s->firstName));
     read_line("New last name: ", s->lastName, sizeof(s->lastName));
     read_line("New programme: ", s->programme, sizeof(s->programme));
-    s->year = read_int("New year (1-8): ", 1, 8);
+    s->year = read_int("New year (1-3): ", 1, 3);
     printf("Record updated.\n");
 }
 
@@ -224,7 +224,7 @@ static void search_students(Student *list, int n) {
 // Sorting student records
 static void sort_students(Student *list, int n) {
     if (n < 2) { printf("Not enough records to sort.\n"); return; }
-    int by = read_int("Sort by: \n1) ID  \n2) Name  \n3) Average  \n4) Programme \nEnter your choice:", 1, 4);
+    int by = read_int("Sort by: \n1.ID  \n2.Name  \n3.Average  \n4.Programme \nEnter your choice:", 1, 4);
     for (int i = 0; i < n - 1; i++) {
         for (int j = 0; j < n - i - 1; j++) {
             Student *a = list + j, *b = list + j + 1;
@@ -350,6 +350,7 @@ int main(void) {
     students = load_data(&students, &count);
 
     while (1) {
+        printf("\n==== Student and Academic Record ====");
         printf("\n1.Register \n2.Display All Students \n3.View \n4.Update \n5.Delete \n6.Add Course \n7.Update Marks \n8.Search \n9.Sort \n10.Report \n11.Save \n0.Exit\n");
 
         // Switch cases for user's input
